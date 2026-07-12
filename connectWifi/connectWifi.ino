@@ -3,7 +3,7 @@
 
 const char* ssid = "whynot_2.4GHz";
 const char* password = "this7465";
-const char* serverURL = "https://httpbin.org/post";//"http://192.168.1.50:5000/lookup";
+const char* serverURL = "https://httpbin.org/post";
 
 void setup() 
 {
