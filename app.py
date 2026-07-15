@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 
 @app.route('/lookup', methods=['POST'])
-def lookup() -> None:
+def lookup():
     data = request.get_json()
     username = data['username']
     return jsonify({
@@ -14,5 +14,5 @@ def lookup() -> None:
     })
 
 
-if __name__ == "__main___":
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
