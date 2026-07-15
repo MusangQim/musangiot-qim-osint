@@ -9,7 +9,7 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
 const char* ssid = "whynot_2.4GHz";
 const char* password = "this7465";
-const char* serverURL = "https://httpbin.org/post";
+const char* serverURL = "http://192.168.x.xx:5000/lookup"; //"https://httpbin.org/post";
 
 void setup() 
 {
@@ -56,10 +56,16 @@ void loop()
         delay(2000);
         return;
       }
-      String username = doc["json"]["username"];
+      String username = doc["username"];
+      String status = doc["status"];
+      String message = doc["message"];
       Serial.println("Success! Response: " + response);
       display.setCursor(10, 10);
       display.println("User: " + username);
+      display.setCursor(10, 20);
+      display.println("Status: " + status);
+      display.setCursor(10, 30);
+      display.println("Message: " + message);
       display.display();
     }
     else if (httpCode > 0)
