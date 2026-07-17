@@ -1,13 +1,13 @@
 from flask import Flask, request, jsonify
 import subprocess
+import threading
+import uuid
 
 app = Flask(__name__)
+jobs = {}
 
 
-@app.route('/lookup', methods=['POST'])
-def lookup():
-    data = request.get_json()
-    username = data['username']
+def run_sherlock(job_id, username):
     result = subprocess.run(["sherlock", username],
                             capture_output=True, text=True)
     raw_output = result.stdout
@@ -19,13 +19,31 @@ def lookup():
             socmed_name = parts[0]
             clean_name = socmed_name[4:]
             sites_found.append(clean_name)
+    jobs[job_id]["status"] = "done"
+    jobs[job_id]["sites_found"] = sites_found
+    jobs[job_id]["count"] = len(sites_found)
+
+
+@app.route('/lookup', methods=['POST'])
+def lookup():
+    data = request.get_json()
+    username = data['username']
+    job_id = str(uuid.uuid4())
+    jobs[job_id] = {"status": "processing", "username": username}
+    thread = threading.Thread(target=run_sherlock, args=(job_id, username))
+    thread.start()
     return jsonify({
-        "username": username,
-        "raw_output": raw_output,
-        "error_output": result.stderr,
-        "sites_found": sites_found,
-        "count": len(sites_found)
+        "job_id": job_id,
+        "status": "processing"
     })
+
+
+@app.route('/result/<job_id>', methods=['GET'])
+def get_result(job_id):
+    if job_id not in jobs:
+        return jsonify({"status": "not_found"}), 404
+    job = jobs[job_id]
+    return jsonify(job)
 
 
 if __name__ == "__main__":
