@@ -36,6 +36,8 @@ void setup()
 void loop() 
 {
   display.clearDisplay();
+  String job_id = "";
+  bool searchDone = false;
   if (WiFi.status() == WL_CONNECTED)
   {
     HTTPClient http;
@@ -48,6 +50,7 @@ void loop()
       String response = http.getString();
       DynamicJsonDocument doc(1024);
       DeserializationError error = deserializeJson(doc, response);
+      job_id = doc["job_id"].as<String>();
       if (error)
       {
         display.setCursor(10, 32);
@@ -56,16 +59,10 @@ void loop()
         delay(2000);
         return;
       }
-      String username = doc["username"];
-      String status = doc["status"];
-      String message = doc["message"];
-      Serial.println("Success! Response: " + response);
-      display.setCursor(10, 10);
-      display.println("User: " + username);
+      display.clearDisplay();
+      Serial.println("Searching.....");
       display.setCursor(10, 20);
-      display.println("Status: " + status);
-      display.setCursor(10, 30);
-      display.println("Message: " + message);
+      display.println(("Searching....."));
       display.display();
     }
     else if (httpCode > 0)
@@ -77,6 +74,34 @@ void loop()
       Serial.println("Connection Failed, Error: " + String(httpCode));
     }
     http.end();
+    while (searchDone == false)
+    {
+      delay(5000);
+      String resultURL = "http://192.168.x.xx:5000/result/" + job_id;
+      HTTPClient http2;
+      http2.begin(resultURL);
+      int httpCode2 = http2.GET();
+      if (httpCode2 == 200)
+      {
+        String response2 = http2.getString();
+        DynamicJsonDocument doc2(1024);
+        DeserializationError error2 = deserializeJson(doc2, response2);
+        String status = doc2["status"];
+        if (status == "done")
+        {
+          JsonArray sites = doc2["sites_found"];
+          int count = doc2["count"];
+          Serial.println("Success! Response: " + response2);
+          display.setCursor(10, 10);
+          display.println("Found: " + String(count) + " sites");
+          display.setCursor(10, 20);
+          display.println("Found: " + String(sites));
+          display.display();
+          searchDone = true;
+        }
+      }
+      http2.end();
+    }
   }
-  delay(10000);
+  delay(8000);
 }
