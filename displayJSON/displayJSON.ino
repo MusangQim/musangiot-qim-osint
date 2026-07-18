@@ -7,9 +7,27 @@
 
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
+// Global Wifi Setup
 const char* ssid = "whynot_2.4GHz";
 const char* password = "this7465";
 const char* serverURL = "http://192.168.x.xx:5000/lookup"; //"https://httpbin.org/post";
+
+//Global touch sensor + menu
+String usernames[] = {"musangqim", "testuser", "johnwick"};
+int totalUser = 3;
+int selectedIndex = 0;
+enum State {SELECTING, SEARCHING, RESULT};
+State currentState = SELECTING;
+
+const int PIN_UP = 18;
+const int PIN_SELECT = 5;
+const int PIN_DOWN = 4;
+
+String job_id = "";
+bool searchDone = false;
+int totalSitesFound = 0;
+String sitesList[20];
+int scrollIndex = 0;
 
 void setup() 
 {
@@ -31,13 +49,48 @@ void setup()
   }
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
+  pinMode(PIN_UP, INPUT);
+  pinMode(PIN_DOWN, INPUT);
+  pinMode(PIN_SELECT, INPUT);
 }
 
 void loop() 
 {
+  switch (currentState)
+  {
+    case SELECTING:
+    // choose username
+      display.clearDisplay();
+      display.setCursor(10, 10);
+      display.println("Select Username:");
+      display.setCursor(10, 20);
+      display.println("> " + usernames[selectedIndex]);
+      display.display();
+      if (digitalRead(PIN_UP) == HIGH)
+      {
+        selectedIndex = (selectedIndex - 1 + totalUser) % totalUser;
+        delay(300);
+      }
+      if (digitalRead(PIN_DOWN) == HIGH)
+      {
+        selectedIndex = (selectedIndex + 1 + totalUser) % totalUser;
+        delay(300);
+      }
+      if (digitalRead(PIN_SELECT) == HIGH)
+      {
+        currentState = SEARCHING;
+        searchDone = false;
+        delay(300);
+      }
+      break;
+    case SEARCHING:
+    // code WiFi check + POST + polling loop
+      break;
+    case RESULT:
+    // code display result + scroll
+      break;
+  }
   display.clearDisplay();
-  String job_id = "";
-  bool searchDone = false;
   if (WiFi.status() == WL_CONNECTED)
   {
     HTTPClient http;
