@@ -10,8 +10,8 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 // Global Wifi Setup
 const char* ssid = "whynot_2.4GHz";
 const char* password = "this7465";
-const char* serverURL = "http://192.168.0.xx:5000/lookup"; //"https://httpbin.org/post";
-const char* resultBaseURL = "http://192.168.x.xx:5000/result/";
+const char* serverURL = "http://192.168.0.x:5000/lookup"; //"https://httpbin.org/post";
+const char* resultBaseURL = "http://192.168.0.x:5000/result/";
 
 //Global touch sensor + menu
 String usernames[] = {"musangqim", "musang_qim", "musangQim"};
@@ -25,8 +25,9 @@ const int PIN_DOWN = 4;
 
 //Global LED
 const int LED_R = 19;
-const int LED_G = 21;
+const int LED_G = 23;
 unsigned long lastBlinkTime = 0;
+unsigned long lastPollTime = 0;
 bool ledRState = false;
 
 String job_id = "";
@@ -58,6 +59,8 @@ void setup()
   pinMode(PIN_UP, INPUT);
   pinMode(PIN_DOWN, INPUT);
   pinMode(PIN_SELECT, INPUT);
+  pinMode(LED_R, OUTPUT);
+  pinMode(LED_G, OUTPUT);
 }
 
 void loop() 
@@ -73,6 +76,8 @@ void loop()
       display.setCursor(10, 20);
       display.println("> " + usernames[selectedIndex]);
       display.display();
+      digitalWrite(LED_G, LOW);
+      digitalWrite(LED_R, LOW);
       if (digitalRead(PIN_UP) == HIGH)
       {
         selectedIndex = (selectedIndex - 1 + totalUser) % totalUser;
@@ -144,42 +149,54 @@ void loop()
         break;
       }
       job_id = doc["job_id"].as<String>();
+      digitalWrite(LED_G, LOW);
       
       // PART POLLING LOOP /result/job_id
       while (searchDone == false)
       {
-        delay(5000);
-        String resultURL = String(resultBaseURL) + job_id;
-        HTTPClient http2;
-        http2.begin(resultURL);
-        int httpCode2 = http2.GET();
-        if (httpCode2 == 200)
+        if (millis() - lastBlinkTime >= 500)
         {
-          String response2 = http2.getString();
-          DynamicJsonDocument doc2(2048);
-          DeserializationError error2 = deserializeJson(doc2, response2);
-          if (!error2)
+          ledRState = !ledRState;
+          digitalWrite(LED_R, ledRState);
+          lastBlinkTime = millis();
+        }
+        if (millis() - lastPollTime >= 5000)
+        {
+          lastPollTime = millis();
+          String resultURL = String(resultBaseURL) + job_id;
+          HTTPClient http2;
+          http2.begin(resultURL);
+          int httpCode2 = http2.GET();
+          if (httpCode2 == 200)
           {
-            String status = doc2["status"];
-            if (status == "done")
+            String response2 = http2.getString();
+            DynamicJsonDocument doc2(2048);
+            DeserializationError error2 = deserializeJson(doc2, response2);
+            if (!error2)
             {
-              JsonArray sites = doc2["sites_found"];
-              totalSitesFound = doc2["count"];
-              Serial.println("Success! Response: " + response2);
-              for (int i = 0; i < totalSitesFound && i < 20; i++)
-                sitesList[i] = sites[i].as<String>();
-              searchDone = true;
-              scrollIndex = 0;
-              currentState = RESULT;
+              String status = doc2["status"];
+              if (status == "done")
+              {
+                JsonArray sites = doc2["sites_found"];
+                totalSitesFound = doc2["count"];
+                Serial.println("Success! Response: " + response2);
+                for (int i = 0; i < totalSitesFound && i < 20; i++)
+                  sitesList[i] = sites[i].as<String>();
+                searchDone = true;
+                scrollIndex = 0;
+                currentState = RESULT;
+              }
             }
           }
+          http2.end();
         }
-        http2.end();
       }
       break;
     }
     case RESULT:
     {
+      digitalWrite(LED_R, LOW);
+      digitalWrite(LED_G, HIGH);
       display.clearDisplay();
       display.setCursor(10, 10);
       display.println("Found: " + String(totalSitesFound) + " sites");
