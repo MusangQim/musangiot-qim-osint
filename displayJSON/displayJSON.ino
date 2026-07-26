@@ -10,8 +10,8 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 // Global Wifi Setup
 const char* ssid = "whynot_2.4GHz";
 const char* password = "this7465";
-const char* serverURL = "http://192.168.0.x:5000/lookup"; //"https://httpbin.org/post";
-const char* resultBaseURL = "http://192.168.0.x:5000/result/";
+const char* serverURL = "http://192.168.0.xx:5000/lookup"; //"https://httpbin.org/post";
+const char* resultBaseURL = "http://192.168.0.xx:5000/result/";
 
 //Global touch sensor + menu
 String usernames[] = {"musangqim", "musang_qim", "musangQim"};
@@ -23,11 +23,13 @@ const int PIN_UP = 18;
 const int PIN_SELECT = 5;
 const int PIN_DOWN = 4;
 
-//Global LED
+//Global LED and Buzzer
 const int LED_R = 19;
 const int LED_G = 23;
+const int BUZZ = 2;
 unsigned long lastBlinkTime = 0;
 unsigned long lastPollTime = 0;
+unsigned long lastBeepTime = 0;
 bool ledRState = false;
 
 String job_id = "";
@@ -61,6 +63,7 @@ void setup()
   pinMode(PIN_SELECT, INPUT);
   pinMode(LED_R, OUTPUT);
   pinMode(LED_G, OUTPUT);
+  pinMode(BUZZ, OUTPUT);
 }
 
 void loop() 
@@ -154,6 +157,11 @@ void loop()
       // PART POLLING LOOP /result/job_id
       while (searchDone == false)
       {
+        if (millis() - lastBeepTime >= 1000)
+        {
+          tone(BUZZ, 1000, 100);
+          lastBeepTime = millis();
+        }
         if (millis() - lastBlinkTime >= 500)
         {
           ledRState = !ledRState;
