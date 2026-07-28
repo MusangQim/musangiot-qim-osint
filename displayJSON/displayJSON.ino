@@ -213,7 +213,7 @@ void loop()
         delay(200);
         tone(BUZZ, 1500, 200);
         delay(200);
-        tone(BUZZ, 2000, 200);
+        tone(BUZZ, 2000, 300);
         delay(300);
         donePlay = true;
       }
