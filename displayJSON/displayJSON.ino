@@ -31,6 +31,7 @@ unsigned long lastBlinkTime = 0;
 unsigned long lastPollTime = 0;
 unsigned long lastBeepTime = 0;
 bool ledRState = false;
+bool donePlay = false;
 
 String job_id = "";
 bool searchDone = false;
@@ -81,6 +82,7 @@ void loop()
       display.display();
       digitalWrite(LED_G, LOW);
       digitalWrite(LED_R, LOW);
+      donePlay = false;
       if (digitalRead(PIN_UP) == HIGH)
       {
         selectedIndex = (selectedIndex - 1 + totalUser) % totalUser;
@@ -205,6 +207,16 @@ void loop()
     {
       digitalWrite(LED_R, LOW);
       digitalWrite(LED_G, HIGH);
+      if (donePlay == false)
+      {
+        tone(BUZZ, 1000, 200);
+        delay(200);
+        tone(BUZZ, 1500, 200);
+        delay(200);
+        tone(BUZZ, 2000, 200);
+        delay(300);
+        donePlay = true;
+      }
       display.clearDisplay();
       display.setCursor(10, 10);
       display.println("Found: " + String(totalSitesFound) + " sites");
