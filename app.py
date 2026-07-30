@@ -7,9 +7,12 @@ app = Flask(__name__)
 jobs = {}
 
 
-def run_sherlock(job_id, username):
-    result = subprocess.run(["sherlock", username],
-                            capture_output=True, text=True)
+def run_sherlock(job_id, username, mode, site):
+    if mode == "specific":
+        cmd = ["sherlock", username, "--site", site]
+    else:
+        cmd = ["sherlock", username]
+    result = subprocess.run(cmd, capture_output=True, text=True)
     raw_output = result.stdout
     lines = raw_output.split("\n")
     sites_found = []
@@ -28,9 +31,11 @@ def run_sherlock(job_id, username):
 def lookup():
     data = request.get_json()
     username = data['username']
+    mode = data.get('mode', 'random')
+    site = data.get('site', '')
     job_id = str(uuid.uuid4())
     jobs[job_id] = {"status": "processing", "username": username}
-    thread = threading.Thread(target=run_sherlock, args=(job_id, username))
+    thread = threading.Thread(target=run_sherlock, args=(job_id, username, mode, site))
     thread.start()
     return jsonify({
         "job_id": job_id,
