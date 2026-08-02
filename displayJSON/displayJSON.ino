@@ -17,8 +17,13 @@ const char* resultBaseURL = "http://192.168.0.xx:5000/result/";
 String usernames[] = {"musangqim", "musang_qim", "musangQim"};
 int totalUser = 3;
 int selectedIndex = 0;
-enum State {SELECTING, SEARCHING, RESULT};
+enum State {SELECTING, MODE_SELECTED, SEARCHING, RESULT};
 State currentState = SELECTING;
+const char* menuItems[] = {"RANDOM FIND", "github", "twitter", "instagram", "threads"};
+const int MENU_COUNT = 5;
+int modeIndex = 0;
+String selectedMode = "";
+String selectedSite = "";
 const int PIN_UP = 18;
 const int PIN_SELECT = 5;
 const int PIN_DOWN = 4;
@@ -95,6 +100,43 @@ void loop()
       }
       if (digitalRead(PIN_SELECT) == HIGH)
       {
+        currentState = MODE_SELECTED;
+        modeIndex = 0;
+        searchDone = false;
+        delay(300);
+      }
+      break;
+    }
+    case MODE_SELECTED
+    {
+      display.clearDisplay();
+      display.setCursor(10, 10);
+      display.println("Select Mode:");
+      display.setCursor(10, 20);
+      display.println("> " + String(menuItems[modeIndex]));
+      display.display();
+      if (digitalRead(PIN_UP) == HIGH)
+      {
+        modeIndex = (modeIndex - 1 + MENU_COUNT) % MENU_COUNT;
+        delay(300);
+      }
+      if (digitalRead(PIN_DOWN) == HIGH)
+      {
+        modeIndex = (modeIndex + 1) % MENU_COUNT;
+        delay(300); 
+      }
+      if (digitalRead(PIN_SELECT) == HIGH)
+      {
+        if(modeIndex == 0)
+        {
+          selectedMode = "random";
+          selectedSite = "";
+        }
+        else
+        {
+          selectedMode = "specific";
+          selectedSite = String(menuItems[modeIndex]);
+        }
         currentState = SEARCHING;
         searchDone = false;
         delay(300);
