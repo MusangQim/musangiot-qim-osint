@@ -107,7 +107,7 @@ void loop()
       }
       break;
     }
-    case MODE_SELECTED
+    case MODE_SELECTED:
     {
       display.clearDisplay();
       display.setCursor(10, 10);
