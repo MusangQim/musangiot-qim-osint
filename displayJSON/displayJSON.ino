@@ -164,7 +164,9 @@ void loop()
       // PART POST /lookup
       HTTPClient http;
       http.begin(serverURL);
-      String jsonPayload = "{\"username\": \"" + usernames[selectedIndex] + "\"}";
+      String jsonPayload = "{\"username\": \"" + usernames[selectedIndex] + 
+                            "\", \"mode\": \"" + selectedMode +
+                            "\", \"site\": \"" + selectedSite + "\"}";
       http.addHeader("Content-Type", "application/json");
       int httpCode = http.POST(jsonPayload);
 
