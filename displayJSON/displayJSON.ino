@@ -28,21 +28,6 @@ const int PIN_UP = 18;
 const int PIN_SELECT = 5;
 const int PIN_DOWN = 4;
 
-//Global for OLEDKeyboard
-const int ROWS = 6;
-const int COLS = 5;
-char keyboardPages[ROWS][COLS] = {
-  {'A', 'B', 'C', 'D', 'E'},
-  {'F', 'G', 'H', 'I', 'J'},
-  {'K', 'L', 'M', 'N', 'O'},
-  {'P', 'Q', 'R', 'S', 'T'},
-  {'U', 'V', 'W', 'X', 'Y'},
-  {'Z', '<', '_', '^', '^'}
-}
-int currentMode = 0;
-int cursorRow = 0;
-int cursorCol = 0;
-
 //Global LED and Buzzer
 const int LED_R = 19;
 const int LED_G = 23;
